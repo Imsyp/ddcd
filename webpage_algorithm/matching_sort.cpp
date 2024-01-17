@@ -2,90 +2,66 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
 class Student {
 public:
     string name;
-    vector<vector<int>> schedule; // 2D vector for schedule
+    vector<vector<int>> schedule;
 
-    // Constructor to initialize the schedule vector
-    Student() : schedule(7, vector<int>(15, 0)) {}
-
-    // Function to print the schedule
-    void printSchedule() const {
-        cout << "Schedule for " << name << ":\n";
-        for (int i = 0; i < 7; ++i) {
-            cout << "Day " << i + 1 << ": ";
-            for (int j = 0; j < 15; ++j) {
-                cout << schedule[i][j] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-    }
+    Student(const string& n, const vector<vector<int>>& s) : name(n), schedule(s) {}
 };
 
 int main() {
     // CSV 파일 경로
-    string filePath = "C:/Users/pc/ddcd/webpage_algorithm/dataset.csv";
+    string filepath = "C:/Users/pc/ddcd/webpage_algorithm/dataset2.csv";
 
-    // 파일 열기
-    ifstream file(filePath);
-
-    // 파일 열기 실패 시 종료
+    // CSV 파일 읽기
+    ifstream file(filepath);
     if (!file.is_open()) {
-        cerr << "Failed to open the file." << endl;
+        cerr << "파일 열기 오류: " << filepath << endl;
         return 1;
     }
 
-    // CSV 파일을 읽어와서 Student 객체 생성
+    // 클래스 Student의 객체 생성
     vector<Student> students;
+
+    // 첫 번째 행은 시간 정보이므로 무시
+    string header;
+    getline(file, header);
+
+    // CSV 데이터 파싱
     string line;
-
-    // 첫 번째 행은 무시
-    getline(file, line);
-
-    // 첫 번째 열은 무시
-    getline(file, line, ',');
-
     while (getline(file, line)) {
-        Student student;
         stringstream ss(line);
-        getline(ss, student.name, ',');
+        string name;
+        getline(ss, name, ',');
 
-        // 각 요일의 수업 가능한 시간대 할당
-        for (int i = 0; i < 7; ++i) {
-            string timeSlot;
-            getline(ss, timeSlot, ',');
-            stringstream timeStream(timeSlot);
-            string time;
-            while (getline(timeStream, time, ' ')) {
-                if (time.find('-') != string::npos) {
-                    // 처리하기 쉽게 중복된 시간대 처리
-                    int start = stoi(time.substr(0, time.find('-')));
-                    int end = stoi(time.substr(time.find('-') + 1));
-                    for (int j = start; j <= end; ++j) {
-                        if (j >= 9 && j <= 23) {
-                            student.schedule[i][j - 9] = "O";
-                        }
-                    }
-                } else {
-                    int t = stoi(time);
-                    if (t >= 9 && t <= 23) {
-                        student.schedule[i][t - 9] = "O";
-                    }
-                }
+        vector<vector<int>> schedule;
+
+        // 추가: 여러 요소가 있는 경우 처리
+        string cell;
+        while (getline(ss, cell, ',')) {
+            // 추가: 빈 문자열 및 공백 제거하지 않고 정수 변환
+            stringstream cell_ss(cell);
+            vector<int> time_slots;
+            int time;
+            while (cell_ss >> time) {
+                time_slots.push_back(time);
             }
+            schedule.push_back(time_slots);
         }
+
+        // 객체 생성
+        Student student(name, schedule);
 
         students.push_back(student);
     }
 
-    for (const auto& student : students) {
-        student.printSchedule();
-    }
+    // 객체 정보 출력
+    cout << students[0].schedule[8][1];
 
     return 0;
 }
