@@ -14,9 +14,19 @@ public:
     Student(const string& n, const vector<vector<int>>& s) : name(n), schedule(s) {}
 };
 
+class Tutor {
+public:
+    string name;
+    vector<vector<int>> schedule;
+
+    Tutor(const string& n, const vector<vector<int>>& s) : name(n), schedule(s) {}
+};
+
+
+
 int main() {
     // CSV 파일 경로
-    string filepath = "C:/Users/pc/ddcd/webpage_algorithm/dataset2.csv";
+    string filepath = "C:/Users/pc/ddcd/webpage_algorithm/student_dataset.csv";
 
     // CSV 파일 읽기
     ifstream file(filepath);
@@ -61,7 +71,17 @@ int main() {
     }
 
     // 객체 정보 출력
-    cout << students[0].schedule[8][1];
+    for (const auto& student : students) {
+        cout << "이름: " << student.name << endl;
+        cout << "일정: ";
+        for (size_t i = 0; i < student.schedule.size(); ++i) {
+            for (size_t j = 0; j < student.schedule[i].size(); ++j) {
+                cout << student.schedule[i][j] << " ";
+            }
+            cout << "| ";
+        }
+        cout << endl << endl;
+    }
 
     return 0;
 }
