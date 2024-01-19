@@ -71,7 +71,7 @@ vector<Person*> readCSV(const string& filepath) {
 
         // 객체 생성
         Schedule personSchedule(schedule);
-        if (name.find("tutor") != string::npos) {
+        if (filepath.find("tutor") != string::npos) {
             // "tutor"가 이름에 포함되어 있으면 Tutor 객체 생성
             people.push_back(new Tutor(name, personSchedule));
         } else {
@@ -81,6 +81,33 @@ vector<Person*> readCSV(const string& filepath) {
     }
 
     return people;
+}
+
+// 같은 인덱스의 벡터에 같은 요소를 하나라도 포함하는 tutor를 찾는 함수
+vector<Tutor*> findTutorsForStudent(const Student* student, const vector<Tutor*>& tutors) {
+    vector<Tutor*> matchingTutors;
+
+    for (const auto& tutor : tutors) {
+        const Schedule& studentSchedule = student->schedule;
+        const Schedule& tutorSchedule = tutor->schedule;
+
+        // 모든 슬롯에 대해 검사
+        for (size_t i = 0; i < studentSchedule.slots.size(); ++i) {
+            const vector<int>& studentSlots = studentSchedule.slots[i];
+            const vector<int>& tutorSlots = tutorSchedule.slots[i];
+
+            // 두 슬롯이 하나 이상의 요소를 공유하는지 확인
+            if (any_of(studentSlots.begin(), studentSlots.end(), 
+                            [&tutorSlots](int slot) {
+                                return find(tutorSlots.begin(), tutorSlots.end(), slot) != tutorSlots.end();
+                            })) {
+                matchingTutors.push_back(tutor);
+                break;  // 같은 tutor가 이미 추가되었으므로 더 이상 검사하지 않음
+            }
+        }
+    }
+
+    return matchingTutors;
 }
 
 int main() {
@@ -118,22 +145,13 @@ int main() {
         }
     }
 
-    // 객체 정보 출력
-    cout << "===== Students =====" << endl;
-    for (const auto& student : students) {
-        cout << "이름: " << student->name << endl;
-        cout << "일정: ";
-        for (size_t i = 0; i < student->schedule.slots.size(); ++i) {
-            for (size_t j = 0; j < student->schedule.slots[i].size(); ++j) {
-                cout << student->schedule.slots[i][j] << " ";
-            }
-            cout << "| ";
-        }
-        cout << endl << endl;
-    }
+    // 예시: 이성연 학생을 입력으로 넣었을 때 해당하는 tutor 찾기
+    Student* inputStudent = students[24];  // 이성연 학생
+    vector<Tutor*> matchingTutors = findTutorsForStudent(inputStudent, tutors);
 
-    cout << "===== Tutors =====" << endl;
-    for (const auto& tutor : tutors) {
+    // 결과 출력
+    cout << "===== Tutors Matching with " << inputStudent->name << " =====" << endl;
+    for (const auto& tutor : matchingTutors) {
         cout << "이름: " << tutor->name << endl;
         cout << "일정: ";
         for (size_t i = 0; i < tutor->schedule.slots.size(); ++i) {
@@ -144,6 +162,34 @@ int main() {
         }
         cout << endl << endl;
     }
+
+    // 객체 정보 출력
+    // cout << "===== Students =====" << endl;
+    // for (const auto& student : students) {
+    //     cout << "이름: " << student->name << endl;
+    //     cout << "일정: ";
+    //     for (size_t i = 0; i < student->schedule.slots.size(); ++i) {
+    //         for (size_t j = 0; j < student->schedule.slots[i].size(); ++j) {
+    //             cout << student->schedule.slots[i][j] << " ";
+    //         }
+    //         cout << "| ";
+    //     }
+    //     cout << endl << endl;
+    // }
+
+    // cout << "===== Tutors =====" << endl;
+    // for (const auto& tutor : tutors) {
+    //     cout << "이름: " << tutor->name << endl;
+    //     cout << "일정: ";
+    //     for (size_t i = 0; i < tutor->schedule.slots.size(); ++i) {
+    //         for (size_t j = 0; j < tutor->schedule.slots[i].size(); ++j) {
+    //             cout << tutor->schedule.slots[i][j] << " ";
+    //         }
+    //         cout << "| ";
+    //     }
+    //     cout << endl << endl;
+    // }
+
 
     return 0;
 }
